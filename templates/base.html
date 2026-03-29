@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}AHPC – Escribanías Judiciales{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cinzel:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --vellum:      #f8f0d8;
+  --vellum-dark: #ecdcb0;
+  --vellum-deep: #e0cc90;
+  --ink:         #1c1208;
+  --ink-mid:     #3d2b0e;
+  --brown:       #7a4a12;
+  --gold:        #b8862a;
+  --gold-lt:     #d4a853;
+  --rust:        #8b3a1a;
+  --border:      #c0913a;
+  --border-lt:   #dfc080;
+  --shadow:      rgba(28,18,8,.18);
+  --cream:       #fdf8ed;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'EB Garamond', Georgia, serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c0913a' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── NAV ── */
+nav {
+  background: var(--ink);
+  border-bottom: 3px solid var(--gold);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: stretch;
+}
+.nav-brand {
+  font-family: 'Cinzel', serif;
+  font-size: .82rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gold-lt);
+  padding: .85rem 1.6rem;
+  text-decoration: none;
+  border-right: 1px solid rgba(192,145,58,.25);
+  display: flex; align-items: center; gap: .5rem;
+  white-space: nowrap;
+}
+.nav-brand:hover { color: var(--vellum); }
+.nav-links { display: flex; align-items: stretch; }
+.nav-links a {
+  font-family: 'EB Garamond', serif;
+  font-size: 1rem; letter-spacing: .04em;
+  color: rgba(248,240,216,.65);
+  text-decoration: none;
+  padding: 0 1.2rem;
+  display: flex; align-items: center;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  transition: all .2s;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--gold-lt);
+  border-bottom-color: var(--gold);
+  background: rgba(184,134,42,.07);
+}
+
+/* ── LAYOUT ── */
+main { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  text-align: center; padding: 3.5rem 1rem 2.5rem;
+  position: relative;
+}
+.page-header .eyebrow {
+  font-family: 'Fira Code', monospace;
+  font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 1rem;
+}
+.page-header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  color: var(--ink-mid); line-height: 1.2;
+  font-weight: 600;
+}
+.page-header p {
+  font-size: 1.15rem; color: var(--brown);
+  font-style: italic; margin-top: .6rem;
+}
+.page-header .ornament {
+  font-size: 1.1rem; color: var(--gold);
+  letter-spacing: .6em; margin-top: 1.5rem; opacity: .55;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--vellum);
+  border: 1px solid var(--border-lt);
+  padding: 1.6rem;
+  box-shadow: 0 2px 10px var(--shadow);
+  position: relative;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--brown), var(--gold), var(--brown));
+}
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.05rem; letter-spacing: .05em;
+  padding: .55rem 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--ink-mid);
+  color: var(--vellum);
+  cursor: pointer; transition: all .2s;
+  text-decoration: none; display: inline-block;
+}
+.btn:hover { background: var(--brown); border-color: var(--gold); }
+.btn-outline {
+  background: transparent; color: var(--ink-mid); border-color: var(--border);
+}
+.btn-outline:hover { background: var(--vellum-dark); }
+.btn-sm { padding: .3rem .9rem; font-size: .9rem; }
+
+/* ── FORM INPUTS ── */
+input, select {
+  font-family: 'EB Garamond', serif;
+  font-size: 1rem;
+  border: 1px solid var(--border-lt);
+  background: var(--cream); color: var(--ink);
+  padding: .5rem .75rem; width: 100%; outline: none;
+  transition: border-color .2s;
+}
+input:focus, select:focus {
+  border-color: var(--gold); background: white;
+  box-shadow: 0 0 0 2px rgba(184,134,42,.12);
+}
+label {
+  font-family: 'Fira Code', monospace;
+  font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--brown); display: block; margin-bottom: .3rem;
+}
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-family: 'Cinzel', serif;
+  font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+  background: var(--ink); color: var(--gold-lt);
+  padding: .65rem 1rem; text-align: left;
+}
+.data-table td {
+  padding: .6rem 1rem;
+  border-bottom: 1px solid var(--vellum-deep);
+  font-size: .97rem; vertical-align: top;
+}
+.data-table tr:nth-child(even) td { background: rgba(192,145,58,.06); }
+.data-table tr:hover td { background: rgba(192,145,58,.13); cursor: pointer; }
+
+/* ── SERIE BADGE ── */
+.serie-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: .72rem; padding: .15rem .5rem;
+  border: 1px solid var(--border-lt);
+  color: var(--brown); background: var(--vellum-dark);
+  white-space: nowrap;
+}
+.serie-1 { border-color: #9b6b2a; color: #9b6b2a; }
+.serie-2 { border-color: #2a6b5a; color: #2a6b5a; background: #e8f5f0; }
+.serie-3 { border-color: #6b2a2a; color: #6b2a2a; background: #f5e8e8; }
+.serie-4 { border-color: #2a4a6b; color: #2a4a6b; background: #e8eef5; }
+
+/* ── YEAR MONO ── */
+.year-mono {
+  font-family: 'Fira Code', monospace;
+  font-size: .85rem; color: var(--brown);
+}
+
+/* ── PAGINATION ── */
+.pagination { display: flex; gap: .35rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+.page-btn {
+  font-family: 'Fira Code', monospace; font-size: .75rem;
+  padding: .3rem .65rem;
+  border: 1px solid var(--border-lt);
+  background: var(--cream); cursor: pointer; color: var(--ink-mid);
+  transition: all .15s;
+}
+.page-btn:hover, .page-btn.active { background: var(--ink); color: var(--gold-lt); border-color: var(--ink); }
+
+/* ── MISC ── */
+.ornament-line {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 2rem 0; color: var(--gold); opacity: .5;
+}
+.ornament-line::before, .ornament-line::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-lt);
+}
+footer {
+  border-top: 1px solid var(--border-lt);
+  text-align: center; padding: 1.5rem;
+  font-size: .88rem; color: var(--brown); font-style: italic;
+  margin-top: 4rem;
+}
+.loading { text-align: center; padding: 3rem; font-style: italic; color: var(--brown); }
+.empty   { text-align: center; padding: 3rem; color: var(--brown); font-style: italic; }
+.table-wrapper { background: var(--vellum); border: 1px solid var(--border-lt); overflow-x: auto; }
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">✦ AHPC · Escribanías</a>
+    <div class="nav-links">
+      <a href="/" {% if request.endpoint=='index' %}class="active"{% endif %}>Inicio</a>
+      <a href="/buscar" {% if request.endpoint=='buscar' %}class="active"{% endif %}>Buscar</a>
+      <a href="/estadisticas" {% if request.endpoint=='estadisticas' %}class="active"{% endif %}>Estadísticas</a>
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  Archivo Histórico de la Provincia de Córdoba &mdash;
+  Escribanías Judiciales 1, 2, 3 y 4 &bull; Índice de Expedientes 1574–1882
+  <br>Poder Judicial de la Provincia de Córdoba
+</footer>
+</body>
+</html>

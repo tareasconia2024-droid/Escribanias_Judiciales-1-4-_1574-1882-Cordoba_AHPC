@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas – AHPC Escribanías{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-section { margin-bottom: 2.5rem; }
+.stats-section h2 {
+  font-family: 'Cinzel', serif; font-size: .95rem;
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 1.2rem; padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border-lt); color: var(--ink-mid);
+}
+
+.bar-chart { display: flex; flex-direction: column; gap: .45rem; }
+.bar-row { display: flex; align-items: center; gap: .8rem; font-size: .9rem; }
+.bar-label {
+  width: 190px; text-align: right; flex-shrink: 0;
+  color: var(--brown); font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bar-label.mono { font-family: 'Fira Code', monospace; font-style: normal; font-size: .78rem; width: 55px; }
+.bar-track {
+  flex: 1; background: rgba(192,145,58,.12); height: 20px;
+  position: relative; border: 1px solid var(--border-lt);
+}
+.bar-fill-1 { height: 100%; background: linear-gradient(90deg, #9b6b2a, #c4953a); }
+.bar-fill-2 { height: 100%; background: linear-gradient(90deg, #2a6b5a, #3a9b85); }
+.bar-fill-3 { height: 100%; background: linear-gradient(90deg, #6b2a2a, #9b3a3a); }
+.bar-fill-4 { height: 100%; background: linear-gradient(90deg, #2a4a6b, #3a6a9b); }
+.bar-fill   { height: 100%; background: linear-gradient(90deg, var(--ink-mid), var(--brown)); }
+.bar-val { width: 50px; font-family: 'Fira Code', monospace; font-size: .72rem; color: var(--brown); flex-shrink: 0; }
+
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+.two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 900px) { .three-col { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .three-col, .two-col { grid-template-columns: 1fr; } }
+
+.card-bg { background: var(--vellum); border: 1px solid var(--border-lt); padding: 1.5rem; }
+
+.serie-pill {
+  display: inline-block; padding: .2rem .7rem;
+  font-family: 'Fira Code', monospace; font-size: .78rem;
+  border: 1px solid var(--border-lt); color: var(--brown);
+  background: var(--vellum-dark); margin-bottom: .5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Archivo Histórico de la Provincia de Córdoba</div>
+    <h1>Estadísticas del Fondo</h1>
+    <p>Análisis cuantitativo · Escribanías 1, 2, 3 y 4</p>
+    <div class="ornament">✦ ✦ ✦</div>
+  </div>
+
+  <!-- POR SIGLO -->
+  <div class="stats-section card-bg" style="margin-bottom:1.5rem">
+    <h2>Distribución por siglo</h2>
+    {% set max_s = por_siglo|map(attribute='total')|max %}
+    <div class="bar-chart">
+      {% for s in por_siglo %}
+      <div class="bar-row">
+        <span class="bar-label mono">S. {{ (s.siglo // 100 + 1)|int }}°</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:{{ (s.total / max_s * 100)|round(1) }}%"></div>
+        </div>
+        <span class="bar-val">{{ s.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:1.5rem">
+    <!-- POR SERIE -->
+    <div class="stats-section card-bg">
+      <h2>Expedientes por escribanía</h2>
+      {% set max_e = por_serie|map(attribute='total')|max %}
+      <div class="bar-chart">
+        {% for s in por_serie %}
+        {% set n = s.serie.replace('Escribanía ','') %}
+        <div class="bar-row">
+          <span class="bar-label mono">{{ s.serie }}</span>
+          <div class="bar-track">
+            <div class="bar-fill-{{ n }}" style="width:{{ (s.total / max_e * 100)|round(1) }}%"></div>
+          </div>
+          <span class="bar-val">{{ s.total }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- TOP CAUSAS -->
+    <div class="stats-section card-bg">
+      <h2>Causas más frecuentes</h2>
+      {% set max_c = top_causas|map(attribute='total')|max %}
+      <div class="bar-chart">
+        {% for c in top_causas %}
+        <div class="bar-row">
+          <span class="bar-label" title="{{ c.causa }}">{{ c.causa }}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{{ (c.total / max_c * 100)|round(1) }}%"></div>
+          </div>
+          <span class="bar-val">{{ c.total }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- POR DÉCADA -->
+  <div class="stats-section card-bg" style="margin-bottom:1.5rem">
+    <h2>Expedientes por década</h2>
+    {% set max_d = por_decada|map(attribute='total')|max %}
+    <div class="bar-chart">
+      {% for d in por_decada %}
+      <div class="bar-row">
+        <span class="bar-label mono">{{ d.decada }}s</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:{{ (d.total / max_d * 100)|round(1) }}%"></div>
+        </div>
+        <span class="bar-val">{{ d.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- TOP PARTES -->
+  <div class="stats-section card-bg">
+    <h2>Partes más citadas en expedientes</h2>
+    {% set max_p = top_partes|map(attribute='total')|max %}
+    <div class="bar-chart">
+      {% for p in top_partes %}
+      <div class="bar-row">
+        <span class="bar-label" title="{{ p.partes }}">{{ p.partes }}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:{{ (p.total / max_p * 100)|round(1) }}%"></div>
+        </div>
+        <span class="bar-val">{{ p.total }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</main>
+{% endblock %}

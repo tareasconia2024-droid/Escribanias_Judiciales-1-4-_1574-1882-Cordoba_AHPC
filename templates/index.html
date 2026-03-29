@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}AHPC – Escribanías Judiciales 1574–1882{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero {
+  background: var(--ink);
+  color: var(--vellum);
+  text-align: center;
+  padding: 5rem 1.5rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(192,145,58,.06) 0px, rgba(192,145,58,.06) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(192,145,58,.06) 0px, rgba(192,145,58,.06) 1px, transparent 1px, transparent 40px);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-family: 'Fira Code', monospace;
+  font-size: .75rem; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.8rem, 5vw, 4rem);
+  color: var(--vellum); line-height: 1.15;
+  font-weight: 700; position: relative;
+}
+.hero h1 span { color: var(--gold-lt); }
+.hero-years {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.1rem; color: var(--gold);
+  margin-top: .8rem; letter-spacing: .15em;
+}
+.hero-sub {
+  font-size: 1.15rem; color: rgba(248,240,216,.7);
+  font-style: italic; margin-top: .6rem;
+  max-width: 620px; margin-left: auto; margin-right: auto;
+}
+.hero-actions { margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.hero .btn { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 500; }
+.hero .btn:hover { background: var(--gold-lt); }
+.hero .btn-outline { background: transparent; color: var(--vellum); border-color: rgba(248,240,216,.4); }
+.hero .btn-outline:hover { background: rgba(248,240,216,.1); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.2rem; margin: 3rem 0;
+}
+.stat-card {
+  background: var(--vellum);
+  border: 1px solid var(--border-lt);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.stat-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--rust));
+}
+.stat-num {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem; font-weight: 700;
+  color: var(--ink-mid); line-height: 1;
+}
+.stat-label {
+  font-family: 'Fira Code', monospace;
+  font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--brown); margin-top: .4rem;
+}
+
+.series-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+  margin-bottom: 3rem;
+}
+@media (max-width: 700px) { .series-grid { grid-template-columns: 1fr 1fr; } }
+.serie-card {
+  background: var(--vellum); border: 1px solid var(--border-lt);
+  padding: 1.2rem; text-align: center;
+}
+.serie-card .serie-name {
+  font-family: 'Cinzel', serif; font-size: .85rem;
+  color: var(--ink-mid); margin-bottom: .4rem;
+}
+.serie-card .serie-count {
+  font-family: 'Fira Code', monospace; font-size: 1.5rem;
+  color: var(--brown); font-weight: 500;
+}
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } }
+.info-block h3 {
+  font-family: 'Cinzel', serif; font-size: 1rem;
+  margin-bottom: .8rem; padding-bottom: .4rem;
+  border-bottom: 1px solid var(--border-lt); color: var(--ink-mid);
+}
+.info-block p { font-size: 1.02rem; line-height: 1.75; color: var(--ink-mid); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <p class="hero-eyebrow">Archivo Histórico de la Provincia de Córdoba</p>
+  <h1>Escribanías <span>Judiciales</span><br>1, 2, 3 y 4</h1>
+  <p class="hero-years">1574 — 1882</p>
+  <p class="hero-sub">Índice de Expedientes Judiciales · Poder Judicial de la Provincia de Córdoba</p>
+  <div class="hero-actions">
+    <a href="/buscar" class="btn">Buscar expedientes</a>
+    <a href="/estadisticas" class="btn btn-outline">Ver estadísticas</a>
+  </div>
+</div>
+
+<main>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num">{{ "{:,}".format(total).replace(",",".") }}</div>
+      <div class="stat-label">Expedientes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ anio_inicio }}</div>
+      <div class="stat-label">Año más antiguo</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ anio_fin }}</div>
+      <div class="stat-label">Año más reciente</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ anio_fin - anio_inicio }}</div>
+      <div class="stat-label">Años de cobertura</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{{ "{:,}".format(tipos).replace(",",".") }}</div>
+      <div class="stat-label">Tipos de causa</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Escribanías</div>
+    </div>
+  </div>
+
+  <h2 style="font-family:'Cinzel',serif; font-size:1rem; color:var(--brown); letter-spacing:.1em; text-transform:uppercase; margin-bottom:1rem;">Expedientes por escribanía</h2>
+  <div class="series-grid">
+    {% for s in por_serie %}
+    <div class="serie-card">
+      <div class="serie-name">{{ s.serie }}</div>
+      <div class="serie-count">{{ "{:,}".format(s.t).replace(",",".") }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="ornament-line">✦</div>
+
+  <div class="info-grid">
+    <div class="info-block card">
+      <h3>Sobre este fondo documental</h3>
+      <p>
+        Las Escribanías Judiciales 1, 2, 3 y 4 constituyen uno de los repositorios más antiguos
+        del Poder Judicial de Córdoba. Sus expedientes abarcan más de tres siglos de actividad
+        judicial, desde el período colonial tardío hasta fines del siglo XIX, incluyendo
+        causas civiles, sucesorias, testamentarias y de tierras.
+      </p>
+    </div>
+    <div class="info-block card">
+      <h3>Instrucciones de búsqueda</h3>
+      <p>
+        Puede buscar por nombre de las partes, tipo de causa, escribanía específica
+        (1 a 4), rango de años o número de legajo. También dispone de búsqueda de
+        texto libre sobre el contenido de partes y causas. Los resultados pueden
+        descargarse en formato PDF para su cita archivística.
+      </p>
+    </div>
+  </div>
+</main>
+{% endblock %}

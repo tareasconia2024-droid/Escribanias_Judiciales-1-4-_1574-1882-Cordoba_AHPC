@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}Buscar – AHPC Escribanías{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-layout { display: grid; grid-template-columns: 290px 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 850px) { .search-layout { grid-template-columns: 1fr; } }
+
+.filters-panel {
+  background: var(--vellum);
+  border: 1px solid var(--border-lt);
+  padding: 1.5rem;
+  position: sticky; top: 60px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.filters-panel h2 {
+  font-family: 'Cinzel', serif; font-size: .9rem;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-mid); margin-bottom: 1.2rem;
+  padding-bottom: .6rem; border-bottom: 1px solid var(--border-lt);
+}
+.form-group { margin-bottom: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+
+.results-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: .5rem;
+}
+.results-header h2 { font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-mid); }
+.results-count { font-family: 'Fira Code', monospace; font-size: .75rem; color: var(--brown); }
+
+/* Serie select colors */
+select option[value="Escribanía 1"] { color: #9b6b2a; }
+select option[value="Escribanía 2"] { color: #2a6b5a; }
+select option[value="Escribanía 3"] { color: #6b2a2a; }
+select option[value="Escribanía 4"] { color: #2a4a6b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-header">
+    <div class="eyebrow">Escribanías Judiciales 1, 2, 3 y 4</div>
+    <h1>Búsqueda de Expedientes</h1>
+    <p>Índice documental 1574–1882</p>
+    <div class="ornament">✦ ✦ ✦</div>
+  </div>
+
+  <div class="search-layout">
+    <!-- FILTROS -->
+    <aside class="filters-panel">
+      <h2>Filtros</h2>
+
+      <div class="form-group">
+        <label>Partes / Intervinientes</label>
+        <input type="text" id="partes" placeholder="Apellido o nombre…">
+      </div>
+
+      <div class="form-group">
+        <label>Causa / Objeto del juicio</label>
+        <input type="text" id="causa" placeholder="Sucesorio, herencia, tierras…">
+      </div>
+
+      <div class="form-group">
+        <label>Escribanía</label>
+        <select id="serie">
+          <option value="">Todas las escribanías</option>
+          <option value="Escribanía 1">Escribanía 1</option>
+          <option value="Escribanía 2">Escribanía 2</option>
+          <option value="Escribanía 3">Escribanía 3</option>
+          <option value="Escribanía 4">Escribanía 4</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Rango de años</label>
+        <div class="form-row">
+          <input type="number" id="anio_desde" placeholder="Desde" min="1574" max="1882">
+          <input type="number" id="anio_hasta" placeholder="Hasta" min="1574" max="1882">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Legajo</label>
+        <input type="text" id="legajo" placeholder="N° de legajo">
+      </div>
+
+      <div class="form-group">
+        <label>Búsqueda libre (texto completo)</label>
+        <input type="text" id="texto" placeholder="Cualquier término…">
+      </div>
+
+      <button class="btn" style="width:100%;margin-top:.5rem" onclick="buscar(1)">Buscar</button>
+      <button class="btn btn-outline" style="width:100%;margin-top:.5rem" onclick="limpiar()">Limpiar filtros</button>
+      <button class="btn btn-outline btn-sm" id="btn-pdf" style="width:100%;margin-top:1rem" onclick="exportarPDF()" disabled>
+        ↓ Exportar PDF
+      </button>
+    </aside>
+
+    <!-- RESULTADOS -->
+    <div>
+      <div class="results-header">
+        <h2>Resultados</h2>
+        <span class="results-count" id="results-count"></span>
+      </div>
+
+      <div id="results-container">
+        <div class="empty">Ingrese criterios de búsqueda para comenzar.</div>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+let lastParams = {};
+
+function serieClass(s) {
+  if (!s) return '';
+  const n = s.replace('Escribanía ','');
+  return `serie-${n}`;
+}
+
+function getParams() {
+  return {
+    partes:     document.getElementById('partes').value.trim(),
+    causa:      document.getElementById('causa').value.trim(),
+    serie:      document.getElementById('serie').value.trim(),
+    anio_desde: document.getElementById('anio_desde').value.trim(),
+    anio_hasta: document.getElementById('anio_hasta').value.trim(),
+    legajo:     document.getElementById('legajo').value.trim(),
+    texto:      document.getElementById('texto').value.trim(),
+  };
+}
+
+function limpiar() {
+  ['partes','causa','anio_desde','anio_hasta','legajo','texto'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('serie').value = '';
+  document.getElementById('results-container').innerHTML = '<div class="empty">Ingrese criterios de búsqueda para comenzar.</div>';
+  document.getElementById('results-count').textContent = '';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('btn-pdf').disabled = true;
+}
+
+async function buscar(page = 1) {
+  const p = getParams();
+  lastParams = p;
+  const qs = new URLSearchParams({...p, page}).toString();
+  document.getElementById('results-container').innerHTML = '<div class="loading">Consultando el archivo…</div>';
+  document.getElementById('pagination').innerHTML = '';
+
+  const resp = await fetch('/api/buscar?' + qs);
+  const data = await resp.json();
+  const total = data.total;
+
+  document.getElementById('results-count').textContent =
+    total === 0 ? 'Sin resultados' : `${total.toLocaleString('es-AR')} expediente${total !== 1 ? 's' : ''}`;
+  document.getElementById('btn-pdf').disabled = total === 0;
+
+  if (data.registros.length === 0) {
+    document.getElementById('results-container').innerHTML = '<div class="empty">No se encontraron expedientes con esos criterios.</div>';
+    return;
+  }
+
+  let html = `<div class="table-wrapper">
+    <table class="data-table"><thead><tr>
+      <th>Año</th><th>Escribanía</th><th>Leg.</th><th>Expte.</th><th>Partes</th><th>Causa</th>
+    </tr></thead><tbody>`;
+
+  for (const r of data.registros) {
+    const sc = serieClass(r.serie);
+    html += `<tr onclick="window.location='/detalle/${r.id}'">
+      <td><span class="year-mono">${r.anio || '–'}</span></td>
+      <td><span class="serie-badge ${sc}">${r.serie || '–'}</span></td>
+      <td>${r.legajo || '–'}</td>
+      <td>${r.expediente || '–'}</td>
+      <td>${esc(r.partes || '–')}</td>
+      <td>${esc(r.causa || '–')}</td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('results-container').innerHTML = html;
+
+  // Paginación
+  const totalPages = Math.ceil(total / 50);
+  if (totalPages > 1) {
+    let pag = '';
+    const start = Math.max(1, page - 3);
+    const end   = Math.min(totalPages, page + 3);
+    if (page > 1) pag += `<button class="page-btn" onclick="buscar(${page-1})">‹</button>`;
+    for (let i = start; i <= end; i++)
+      pag += `<button class="page-btn${i===page?' active':''}" onclick="buscar(${i})">${i}</button>`;
+    if (page < totalPages) pag += `<button class="page-btn" onclick="buscar(${page+1})">›</button>`;
+    document.getElementById('pagination').innerHTML = pag;
+  }
+}
+
+function exportarPDF() {
+  window.open('/api/exportar-pdf?' + new URLSearchParams(lastParams).toString(), '_blank');
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(1); });
+</script>
+{% endblock %}
